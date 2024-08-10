@@ -57,6 +57,7 @@ namespace WpfManager
 		private void WriteLogMessage(string text)
 		{
 			log.AppendText(text + Environment.NewLine);
+			log.ScrollToEnd();
 		}
 
 		private void Uninstall_Click(object sender, RoutedEventArgs e)
