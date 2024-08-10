@@ -36,17 +36,17 @@ namespace WpfManager
 					if (mod.InstalledVersion == null) model.AvailableMods.Add(mod);
 					else model.InstalledMods.Add(mod);
 				}
+				WriteLogMessage("Mods loaded");
+				this.DataContext = model;
+				model.SelectedMod = model.InstalledMods.FirstOrDefault();
+
+				installedGrid.SelectionChanged += Grid_SelectionChanged;
+				availableGrid.SelectionChanged += Grid_SelectionChanged;
 			}
 			catch (Exception ex)
 			{
 				WriteLogMessage(ex.Message);
 			}
-			this.DataContext = model;
-			model.SelectedMod = model.InstalledMods.FirstOrDefault();
-			WriteLogMessage("Mods loaded");
-
-			installedGrid.SelectionChanged += Grid_SelectionChanged;
-			availableGrid.SelectionChanged += Grid_SelectionChanged;
 		}
 
 		private void Grid_SelectionChanged(object sender, SelectionChangedEventArgs e)
