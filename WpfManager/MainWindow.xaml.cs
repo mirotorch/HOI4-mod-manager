@@ -64,17 +64,24 @@ namespace WpfManager
 			if (installedGrid.SelectedValue is Mod mod)
 			{
 				WriteLogMessage($"Uninstalling {mod.Name}...");
-				try
+
+				Task.Run(() =>
 				{
-					modIOManager.UninstallMod(mod);
-					WriteLogMessage($"{mod.Name} succesfully uninstalled.");
-					model.InstalledMods.Remove(mod);
-					if (mod.AvailableVersion != null) model.AvailableMods.Add(mod);
-				}
-				catch (Exception ex) 
-				{
-					WriteLogMessage(ex.Message);
-				}
+					try
+					{
+						modIOManager.UninstallMod(mod);
+						Dispatcher.Invoke(() =>
+						{
+							WriteLogMessage($"{mod.Name} succesfully uninstalled.");
+							model.InstalledMods.Remove(mod);
+							if (mod.AvailableVersion != null) model.AvailableMods.Add(mod);
+						});
+					}
+					catch (Exception ex)
+					{
+						Dispatcher.Invoke(() => WriteLogMessage(ex.Message));
+					}
+				});
 			}
 		}
 
@@ -83,18 +90,26 @@ namespace WpfManager
 			if (availableGrid.SelectedValue is Mod mod)
 			{
 				WriteLogMessage($"Installing {mod.Name}...");
-				try
+
+				Task.Run(() =>
 				{
-					modIOManager.InstallMod(mod);
-					WriteLogMessage($"{mod.Name} succesfully installed.");
-					model.InstalledMods.Add(mod);
-					model.AvailableMods.Remove(mod);
-				}
-				catch (Exception ex)
-				{
-					WriteLogMessage(ex.Message);
-				}
+					try
+					{
+						modIOManager.InstallMod(mod);
+						Dispatcher.Invoke(() =>
+						{
+							Dispatcher.Invoke(() => WriteLogMessage($"{mod.Name} succesfully installed."));
+							model.InstalledMods.Add(mod);
+							model.AvailableMods.Remove(mod);
+						});
+					}
+					catch (Exception ex)
+					{
+						Dispatcher.Invoke(() => WriteLogMessage(ex.Message));
+					}
+				});
 			}
 		}
+
 	}
 }
