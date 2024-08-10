@@ -1,6 +1,4 @@
 ﻿using System.IO;
-using System.IO.Compression;
-using ICSharpCode.SharpZipLib.BZip2;
 
 namespace WpfManager
 {
@@ -53,7 +51,8 @@ namespace WpfManager
             List<string> installedMods = new(Directory.GetFiles(InstalledPath, "*.mod"));
             foreach (var installed in installedMods)
             {
-                if (modNames.ContainsKey(Path.GetFileName(installed)))
+				var modName = Path.GetFileName(installed)[..^4];
+                if (modNames.ContainsKey(modName))
                 {
                     using var sr = new StreamReader(installed);
                     while (!sr.EndOfStream)
@@ -63,7 +62,7 @@ namespace WpfManager
 						if (line.Length == 0) continue;
 						if (line.StartsWith("version"))
 						{
-                            modNames[Path.GetFileName(installed)].InstalledVersion = line.Split("\"")[1];
+                            modNames[modName].InstalledVersion = line.Split("\"")[1];
                             break;
 						}
 					}
@@ -91,32 +90,35 @@ namespace WpfManager
 			}
 			else
 			{
-				var files = Directory.GetFiles(sourcePath, ".*.mod");
+				var files = Directory.GetFiles(sourcePath, "*.mod");
 				if (files.Length > 0)
 				{
 					foreach (var file in files)
 					{
 						if (file.EndsWith("descriptor.mod"))
-							mod = ParseDescriptor(file, false);
+							File.Copy(file, destModPath, true);
 					}
 				}
 			}
             if (!File.Exists(destModPath)) throw new Exception("Error occured during .mod file copying");
-            
-            if (archivePath != null)
+
+			List<string> lines = File.ReadAllLines(destModPath).ToList();
+			lines = lines.Where(line => !line.StartsWith("path") && !line.StartsWith("archive")).ToList();
+
+			if (archivePath != null)
             {
                 File.Copy(archivePath, Path.Combine(InstalledPath, $"{mod.Name}.zip"));
-                using var sw = new StreamWriter(destModPath);
-                sw.WriteLine($"archive=\"{Path.Combine(InstalledPath, mod.Name)}.zip\"");
+				lines.Add($"archive=\"{Path.Combine(InstalledPath, mod.Name)}.zip\"");
             }
             else
             {
                 var dirPath = Path.Combine(InstalledPath, mod.Name);
 				CopyDirectory(Path.Combine(WorkshopPath, mod.RemoteId), dirPath, true);
-				using var sw = new StreamWriter(destModPath);
-				sw.WriteLine($"path=\"{dirPath}\"");
+				lines.Add($"path=\"{dirPath}\"");
 			}
-            mod.InstalledVersion = mod.AvailableVersion;
+
+			File.WriteAllLines(destModPath, lines);
+			mod.InstalledVersion = mod.AvailableVersion;
 		}
 
 		public void UninstallMod(Mod mod)

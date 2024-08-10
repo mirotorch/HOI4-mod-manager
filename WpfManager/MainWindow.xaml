@@ -8,37 +8,64 @@
         Title="HOI4 mod manager" Height="600" Width="1200">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50*"/>
-            <ColumnDefinition Width="50*"/>
+            <ColumnDefinition Width="25*"/>
+            <ColumnDefinition Width="25*"/>
+            <ColumnDefinition Width="25*"/>
+            <ColumnDefinition Width="25*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="8*"/>
             <RowDefinition Height="70*"/>
             <RowDefinition Height="28*"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" FontSize="20">
+        <Label Grid.Row="0" Grid.Column="0" FontSize="20" VerticalAlignment="Bottom" HorizontalAlignment="Center">
             Installed
         </Label>
-        <Label Grid.Row="0" Grid.Column="1" FontSize="20">
+        <Button Grid.Column="1" Grid.Row="0" FontSize="16" Click="Uninstall_Click">Uninstall selected</Button>
+        <Button Grid.Column="3" Grid.Row="0" FontSize="16" Click="Install_Click">Install selected</Button>
+        <Label Grid.Row="0" Grid.Column="2" FontSize="20" VerticalAlignment="Bottom" HorizontalAlignment="Center">
             Available
         </Label>
-        <DataGrid Grid.Row="1" Grid.Column="0">
-            
+        <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding InstalledMods}" AutoGenerateColumns="True" Name="installedGrid">
+            <!--<DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Width="20*"/>
+                <DataGridTextColumn Header="Installed version"/>
+                <DataGridTextColumn Header="Available version"/>
+                <DataGridTextColumn Header="Version supported"/>
+                <DataGridTextColumn Header="Remote ID" Width="10*"/>
+            </DataGrid.Columns>-->
         </DataGrid>
-        <DataGrid Grid.Row="1" Grid.Column="1"/>
-        <Grid Grid.Row="2" Grid.Column="0">
+        <DataGrid Grid.Row="1" Grid.Column="2"  Grid.ColumnSpan="2" ItemsSource="{Binding AvailableMods}" AutoGenerateColumns="True" Name="availableGrid">
+            <!--<DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Width="20*"/>
+                <DataGridTextColumn Header="Available version"/>
+                <DataGridTextColumn Header="Version supported"/>
+                <DataGridTextColumn Header="Remote ID" Width="10*"/>
+            </DataGrid.Columns>-->
+        </DataGrid>
+        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="35"/>
                 <RowDefinition Height="35"/>
                 <RowDefinition Height="35"/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" FontSize="20">name of the mod</Label>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30*"/>
+                <ColumnDefinition Width="40*"/>
+                <ColumnDefinition Width="30*"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0" FontSize="20" Content="{Binding SelectedMod.Name}" Grid.ColumnSpan="3"></Label>
             <Label Grid.Row="1" FontSize="14">Version installed:</Label>
             <Label Grid.Row="2" FontSize="14">Version available:</Label>
             <Label Grid.Row="3" FontSize="14">Supported game version:</Label>
+
+            <Label Grid.Row="1" Grid.Column="1" FontSize="14" Content="{Binding SelectedMod.InstalledVersion}"></Label>
+            <Label Grid.Row="2" Grid.Column="1" FontSize="14" Content="{Binding SelectedMod.AvailableVersion}"></Label>
+            <Label Grid.Row="3" Grid.Column="1" FontSize="14" Content="{Binding SelectedMod.SupportedVersion}"></Label>
+
         </Grid>
-        <RichTextBox x:Name="log" Grid.Column="1" Grid.Row="2" Background="LightGray">
+        <RichTextBox x:Name="log" Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2" Background="LightGray" ScrollViewer.VerticalScrollBarVisibility="Visible">
             
         </RichTextBox>
     </Grid>

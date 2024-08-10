@@ -1,16 +1,18 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace WpfManager
 {
+	partial class MainWindowModel : ObservableObject
+	{
+		public ObservableCollection<Mod> InstalledMods { get; set; } = new();
+		public ObservableCollection<Mod> AvailableMods { get; set; } = new();
+		[ObservableProperty]
+		public Mod? selectedMod;
+	}
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -18,31 +20,81 @@ namespace WpfManager
 	{
 		private ModIOManager modIOManager;
 
-		private List<Mod> installedMods = new();
-		private List<Mod> availableMods = new();
+		private MainWindowModel model;
 
 		public MainWindow()
 		{
 			InitializeComponent();
+			WriteLogMessage("Loading mod list...");
 			modIOManager = new ModIOManager();
+			model = new MainWindowModel();
 			try
 			{
 				var mods = modIOManager.ReadMods();
 				foreach ( var mod in mods )
 				{
-					if (mod.InstalledVersion == null) availableMods.Add(mod);
-					else installedMods.Add(mod);
+					if (mod.InstalledVersion == null) model.AvailableMods.Add(mod);
+					else model.InstalledMods.Add(mod);
 				}
 			}
 			catch (Exception ex)
 			{
 				WriteLogMessage(ex.Message);
 			}
+			this.DataContext = model;
+			model.SelectedMod = model.InstalledMods.FirstOrDefault();
+			WriteLogMessage("Mods loaded");
+
+			installedGrid.SelectionChanged += Grid_SelectionChanged;
+			availableGrid.SelectionChanged += Grid_SelectionChanged;
+		}
+
+		private void Grid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			model.SelectedMod = ((DataGrid)sender).SelectedValue as Mod;
 		}
 
 		private void WriteLogMessage(string text)
 		{
-			log.AppendText(text);
+			log.AppendText(text + Environment.NewLine);
+		}
+
+		private void Uninstall_Click(object sender, RoutedEventArgs e)
+		{
+			if (installedGrid.SelectedValue is Mod mod)
+			{
+				WriteLogMessage($"Uninstalling {mod.Name}...");
+				try
+				{
+					modIOManager.UninstallMod(mod);
+					WriteLogMessage($"{mod.Name} succesfully uninstalled.");
+					model.InstalledMods.Remove(mod);
+					if (mod.AvailableVersion != null) model.AvailableMods.Add(mod);
+				}
+				catch (Exception ex) 
+				{
+					WriteLogMessage(ex.Message);
+				}
+			}
+		}
+
+		private void Install_Click(object sender, RoutedEventArgs e)
+		{
+			if (availableGrid.SelectedValue is Mod mod)
+			{
+				WriteLogMessage($"Installing {mod.Name}...");
+				try
+				{
+					modIOManager.InstallMod(mod);
+					WriteLogMessage($"{mod.Name} succesfully installed.");
+					model.InstalledMods.Add(mod);
+					model.AvailableMods.Remove(mod);
+				}
+				catch (Exception ex)
+				{
+					WriteLogMessage(ex.Message);
+				}
+			}
 		}
 	}
 }
