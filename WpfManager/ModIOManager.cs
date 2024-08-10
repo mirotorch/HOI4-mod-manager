@@ -108,13 +108,13 @@ namespace WpfManager
 			if (archivePath != null)
             {
                 File.Copy(archivePath, Path.Combine(InstalledPath, $"{mod.Name}.zip"));
-				lines.Add($"archive=\"{Path.Combine(InstalledPath, mod.Name)}.zip\"");
+				lines.Add($"archive=\"{Path.Combine(InstalledPath, mod.Name)}.zip\"".Replace('\\', '/'));
             }
             else
             {
                 var dirPath = Path.Combine(InstalledPath, mod.Name);
 				CopyDirectory(Path.Combine(WorkshopPath, mod.RemoteId), dirPath, true);
-				lines.Add($"path=\"{dirPath}\"");
+				lines.Add($"path=\"{dirPath}\"".Replace('\\', '/'));
 			}
 
 			File.WriteAllLines(destModPath, lines);
